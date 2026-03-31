@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prisma3D - Hub 3D Community</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: 'Outfit', sans-serif; }
+:root {
+  --bg: #f5f7fa; --surface: #fff; --text: #1e293b; --text-light: #64748b;
+  --border: #e2e8f0; --accent: #2563eb; --accent-hover: #1d4ed8;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+body.dark {
+  --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; --text-light: #94a3b8;
+  --border: #334155; --accent: #3b82f6; --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+body { background: var(--bg); color: var(--text); transition: all 0.3s; }
+.app-wrapper { height: 100%; display: grid; grid-template-rows: auto 1fr; gap: 0; }
+.navbar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 14px 20px; display: flex; align-items: center; gap: 20px;
+  box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100;
+}
+.brand { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+.brand-icon {
+  width: 40px; height: 40px; background: var(--accent); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 20px;
+}
+.brand-text h1 { font-size: 18px; font-weight: 900; color: var(--text); }
+.brand-text p { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.nav-menu { display: flex; gap: 6px; flex: 1; justify-content: center; }
+.nav-btn {
+  background: transparent; border: none; padding: 8px 14px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; color: var(--text-light); cursor: pointer;
+  transition: all 0.2s; white-space: nowrap;
+}
+.nav-btn:hover { background: rgba(37,99,235,0.1); color: var(--accent); }
+.nav-btn.active { background: var(--accent); color: #fff; }
+.nav-controls { display: flex; gap: 8px; align-items: center; }
+.nav-btn-sm {
+  width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+  background: transparent; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; font-size: 16px; transition: all 0.2s;
+}
+.nav-btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+.main { flex: 1; overflow-y: auto; }
+.container { max-width: 640px; margin: 0 auto; padding: 20px 16px; }
+.search-box {
+  position: relative; margin-bottom: 24px;
+}
+.search-box input {
+  width: 100%; padding: 10px 36px 10px 12px; border: 1px solid var(--border);
+  border-radius: 10px; background: var(--surface); color: var(--text);
+  font-size: 13px; font-family: inherit;
+}
+.search-box input:focus { outline: none; border-color: var(--accent); }
+.search-box svg {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; stroke: var(--text-light); pointer-events: none;
+}
+.posts { display: grid; gap: 16px; }
+.post-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+}
+.post-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); transform: translateY(-2px); }
+.post-thumb {
+  width: 100%; height: 180px; background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex; align-items: center; justify-content: center; color: #fff;
+  font-size: 56px; object-fit: cover;
+}
+.post-head {
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.post-author {
+  display: flex; align-items: center; gap: 10px; flex: 1;
+}
+.post-avatar {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 12px;
+}
+.post-info h4 { font-size: 13px; font-weight: 700; color: var(--text); }
+.post-info p { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.post-del { background: none; border: none; color: var(--text-light); cursor: pointer;
+  padding: 4px; transition: color 0.2s; font-size: 18px;
+}
+.post-del:hover { color: #ef4444; }
+.post-body {
+  padding: 14px;
+}
+.post-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+.post-desc { font-size: 13px; color: var(--text-light); line-height: 1.5; margin-bottom: 10px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.tag {
+  background: var(--accent); color: #fff; padding: 4px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.post-meta {
+  font-size: 12px; color: var(--text-light); padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.post-meta div { margin: 4px 0; }
+.post-meta strong { color: var(--text); }
+.post-actions {
+  padding: 10px 14px; display: flex; gap: 12px;
+}
+.action-btn {
+  background: none; border: none; cursor: pointer; display: flex;
+  align-items: center; gap: 4px; font-size: 12px; color: var(--text-light);
+  font-weight: 600; font-family: inherit; transition: all 0.2s; padding: 4px 8px;
+  border-radius: 6px;
+}
+.action-btn:hover { background: rgba(37,99,235,0.08); color: var(--accent); }
+.action-btn.liked { color: #ef4444; }
+.page { display: none; }
+.page.active { display: block; }
+.info-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px; margin-bottom: 16px; animation: fadeIn 0.4s ease;
+}
+.info-card-tag {
+  font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 6px;
+}
+.info-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+.info-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+.socmed-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;
+}
+.socmed-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px; text-align: center; text-decoration: none; cursor: pointer;
+  transition: all 0.2s;
+}
+.socmed-card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.12); }
+.socmed-icon { font-size: 40px; margin-bottom: 8px; }
+.socmed-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.socmed-desc { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+.empty {
+  text-align: center; padding: 60px 20px;
+}
+.empty-icon { font-size: 56px; margin-bottom: 16px; }
+.empty h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.empty p { font-size: 13px; color: var(--text-light); }
+.fab {
+  position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px;
+  border-radius: 50%; background: var(--accent); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; color: #fff;
+  z-index: 80; box-shadow: 0 6px 20px rgba(37,99,235,0.4); transition: all 0.2s;
+  font-size: 24px; font-weight: 900;
+}
+.fab:hover { transform: scale(1.1); box-shadow: 0 8px 24px rgba(37,99,235,0.5); }
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200;
+  display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal-box {
+  background: var(--surface); border-radius: 16px; padding: 24px;
+  max-width: 700px; width: 92%; max-height: 90%; overflow-y: auto;
+  border: 1px solid var(--border); transform: scale(0.95); transition: transform 0.3s;
+}
+.modal-overlay.show .modal-box { transform: scale(1); }
+.modal-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px;
+}
+.modal-head h3 { font-size: 20px; font-weight: 800; color: var(--text); }
+.close-btn {
+  background: none; border: none; cursor: pointer; color: var(--text-light);
+  font-size: 24px; padding: 0; transition: color 0.2s; width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+}
+.close-btn:hover { color: var(--text); }
+.form-group { margin-bottom: 14px; }
+.form-label {
+  font-size: 12px; font-weight: 700; color: var(--text-light);
+  display: block; margin-bottom: 6px;
+}
+.input-field {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--surface); color: var(--text);
+  font-size: 13px; font-family: inherit; transition: border-color 0.2s;
+}
+.input-field:focus { outline: none; border-color: var(--accent); }
+.textarea-field { resize: vertical; min-height: 80px; }
+.btn {
+  padding: 10px 20px; border-radius: 10px; font-weight: 600;
+  cursor: pointer; font-size: 14px; font-family: inherit; transition: all 0.2s;
+  border: none; width: 100%;
+}
+.btn-primary {
+  background: var(--accent); color: #fff;
+}
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-secondary {
+  background: transparent; border: 1px solid var(--border); color: var(--accent);
+}
+.btn-secondary:hover { border-color: var(--accent); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.toast {
+  position: fixed; bottom: 24px; right: 24px; background: var(--accent);
+  color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600;
+  font-size: 13px; z-index: 300; opacity: 0; transform: translateX(400px);
+  transition: all 0.4s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(0); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 768px) {
+  .navbar { padding: 12px 14px; }
+  .nav-menu { gap: 4px; }
+  .nav-btn { padding: 6px 10px; font-size: 12px; }
+  .container { padding: 16px 12px; }
+}
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="app-wrapper"><!-- Navbar -->
+   <div class="navbar">
+    <div class="brand">
+     <div class="brand-icon">
+      🎬
+     </div>
+     <div class="brand-text">
+      <h1 id="nav-title">Prisma3D</h1>
+      <p id="nav-subtitle">Hub</p>
+     </div>
+    </div>
+    <div class="nav-menu"><button class="nav-btn active" data-tab="beranda">Beranda</button> <button class="nav-btn" data-tab="informasi">Info</button> <button class="nav-btn" data-tab="sosmed">Sosmed</button> <button class="nav-btn" data-tab="support">Dukungan</button>
+    </div>
+    <div class="nav-controls"><button class="nav-btn-sm" id="theme-toggle" title="Toggle tema">🌙</button> <button class="nav-btn-sm" id="login-btn" title="Login">👤</button>
+    </div>
+   </div><!-- Main Content -->
+   <main class="main">
+    <div class="container"><!-- Beranda -->
+     <div class="page active" id="page-beranda">
+      <div class="search-box"><input id="search-input" placeholder="Cari model, rig, template...">
+       <svg viewbox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+       </svg>
+      </div>
+      <div class="posts" id="posts-grid"></div>
+      <div class="empty" id="empty-state" style="display:none">
+       <div class="empty-icon">
+        📦
+       </div>
+       <h3>Belum Ada Konten</h3>
+       <p>Login sebagai Operator untuk mulai upload model 3D</p>
+      </div>
+     </div><!-- Informasi -->
+     <div class="page" id="page-informasi">
+      <h2 style="font-weight:900; font-size:24px; margin-bottom:20px; color:var(--text)">Informasi &amp; Berita</h2>
+      <div class="info-card">
+       <div class="info-card-tag">
+        Pengumuman
+       </div>
+       <h3>Selamat Datang di Prisma3D Community Hub!</h3>
+       <p>Platform ini dibuat oleh Afi Studio sebagai wadah komunitas untuk berbagi Rig, Model 3D, dan Template untuk aplikasi Prisma3D serta software animasi lainnya. Temukan dan bagikan kreasi terbaikmu di sini!</p>
+      </div>
+      <div class="info-card" style="animation-delay:0.1s">
+       <div class="info-card-tag">
+        Tutorial
+       </div>
+       <h3>Cara Mengunduh Model</h3>
+       <p>1. Cari model yang kamu inginkan melalui pencarian. 2. Klik kartu model untuk melihat detail lengkap. 3. Klik tombol "Download" yang akan mengarahkan ke MediaFire atau Google Drive. 4. Unduh dan import ke aplikasi favoritmu!</p>
+      </div>
+      <div class="info-card" style="animation-delay:0.2s">
+       <div class="info-card-tag">
+        Update
+       </div>
+       <h3>Format File yang Didukung</h3>
+       <p>Platform ini mendukung berbagai format: .p3d (Prisma3D), .blend (Blender), .miproject (Mine-Imator), .obj, .fbx, .glb dan format lainnya.</p>
+      </div>
+     </div><!-- Sosial Media -->
+     <div class="page" id="page-sosmed">
+      <h2 style="font-weight:900; font-size:24px; margin-bottom:20px; color:var(--text)">Sosial Media</h2>
+      <div class="socmed-grid"><a href="https://youtube.com" target="_blank" rel="noopener" class="socmed-card">
+        <div class="socmed-icon">
+         ▶️
+        </div>
+        <div class="socmed-name">
+         YouTube
+        </div>
+        <div class="socmed-desc">
+         Tutorial &amp; Showcase
+        </div></a> <a href="https://instagram.com" target="_blank" rel="noopener" class="socmed-card">
+        <div class="socmed-icon">
+         📸
+        </div>
+        <div class="socmed-name">
+         Instagram
+        </div>
+        <div class="socmed-desc">
+         Behind the Scenes
+        </div></a> <a href="https://tiktok.com" target="_blank" rel="noopener" class="socmed-card">
+        <div class="socmed-icon">
+         🎵
+        </div>
+        <div class="socmed-name">
+         TikTok
+        </div>
+        <div class="socmed-desc">
+         Short Clips
+        </div></a> <a href="https://discord.gg" target="_blank" rel="noopener" class="socmed-card">
+        <div class="socmed-icon">
+         💬
+        </div>
+        <div class="socmed-name">
+         Discord
+        </div>
+        <div class="socmed-desc">
+         Komunitas
+        </div></a>
+      </div>
+     </div><!-- Support -->
+     <div class="page" id="page-support">
+      <h2 style="font-weight:900; font-size:24px; margin-bottom:20px; color:var(--text)">Support Kami</h2>
+      <div class="info-card" style="text-align:center">
+       <div style="font-size:48px; margin-bottom:12px">
+        ☕
+       </div>
+       <h3>Donasi</h3>
+       <p>Dukung kami agar bisa terus membuat konten 3D berkualitas untuk komunitas!</p><a href="https://saweria.co" target="_blank" rel="noopener" class="btn btn-primary" style="display:inline-block; text-decoration:none; margin-top:12px; width:auto; padding:10px 20px">Donasi via Saweria</a>
+      </div>
+      <div class="info-card">
+       <h3 style="text-align:center; margin-bottom:12px">Saran &amp; Tanggapan</h3><input class="input-field" id="feedback-name" placeholder="Nama kamu" style="margin-bottom:8px"> <textarea class="input-field textarea-field" id="feedback-text" placeholder="Tuliskan saran atau tanggapanmu..." maxlength="300" style="margin-bottom:10px"></textarea> <button class="btn btn-primary" id="submit-feedback">Kirim Tanggapan</button>
+       <div id="feedback-msg" style="font-size:13px; margin-top:8px; color:var(--accent); text-align:center"></div>
+      </div>
+     </div>
+    </div>
+   </main>
+  </div><!-- FAB Upload --> <button class="fab" id="fab-upload" title="Upload">➕</button> <!-- Upload Modal -->
+  <div class="modal-overlay" id="upload-modal">
+   <div class="modal-box">
+    <div class="modal-head">
+     <h3>Upload Konten</h3><button class="close-btn" id="close-upload">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Judul *</label> <input class="input-field" id="up-title" placeholder="Nama model/rig/template">
+    </div>
+    <div class="form-group"><label class="form-label">Deskripsi *</label> <textarea class="input-field textarea-field" id="up-desc" placeholder="Deskripsi singkat"></textarea>
+    </div>
+    <div class="form-row">
+     <div class="form-group" style="margin-bottom:0"><label class="form-label">Publisher *</label> <input class="input-field" id="up-publisher" placeholder="Nama publisher">
+     </div>
+     <div class="form-group" style="margin-bottom:0"><label class="form-label">Pembuat *</label> <input class="input-field" id="up-creator" placeholder="Nama pembuat">
+     </div>
+    </div>
+    <div class="form-group"><label class="form-label">Hashtag/Kategori *</label> <input class="input-field" id="up-tags" placeholder="#rig #minecraft #prisma3d">
+    </div>
+    <div class="form-row">
+     <div class="form-group" style="margin-bottom:0"><label class="form-label">Link Download *</label> <input class="input-field" id="up-link" placeholder="https://mediafire.com/...">
+     </div>
+     <div class="form-group" style="margin-bottom:0"><label class="form-label">Sumber *</label> <select class="input-field" id="up-linktype"> <option value="MediaFire">MediaFire</option> <option value="Google Drive">Google Drive</option> <option value="Lainnya">Lainnya</option> </select>
+     </div>
+    </div>
+    <div class="form-group"><label class="form-label">Format File *</label> <input class="input-field" id="up-format" placeholder=".p3d, .blend, .obj">
+    </div>
+    <div class="form-group"><label class="form-label">URL Thumbnail (opsional)</label> <input class="input-field" id="up-thumb" placeholder="https://... (link gambar)">
+    </div><button class="btn btn-primary" id="submit-upload">Publish</button>
+    <div id="upload-msg" style="font-size:13px; text-align:center; font-weight:600; color:#ef4444; margin-top:8px"></div>
+   </div>
+  </div><!-- Detail Modal -->
+  <div class="modal-overlay" id="detail-modal">
+   <div class="modal-box" style="max-width:640px">
+    <div class="modal-head">
+     <h3 id="detail-title"></h3><button class="close-btn" id="close-detail">✕</button>
+    </div>
+    <div id="detail-body"></div>
+   </div>
+  </div><!-- Delete Modal -->
+  <div class="modal-overlay" id="delete-modal">
+   <div class="modal-box" style="max-width:400px; text-align:center">
+    <div style="font-size:48px; margin-bottom:10px">
+     ⚠️
+    </div>
+    <h3 style="font-weight:700; font-size:18px; margin-bottom:6px">Hapus Konten?</h3>
+    <p style="color:var(--text-light); font-size:14px; margin-bottom:16px">Tindakan ini tidak bisa dibatalkan.</p>
+    <div style="display:flex; gap:10px; justify-content:center"><button class="btn btn-secondary" id="cancel-delete">Batal</button> <button class="btn btn-primary" id="confirm-delete" style="background:#ef4444">Hapus</button>
+    </div>
+   </div>
+  </div><!-- Login Modal -->
+  <div class="modal-overlay" id="login-modal">
+   <div class="modal-box" style="max-width:400px">
+    <div class="modal-head">
+     <h3>Login Operator</h3><button class="close-btn" id="close-login">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Kode Operator</label> <input class="input-field" id="login-code" placeholder="Masukkan kode" type="password">
+    </div><button class="btn btn-primary" id="submit-login">Login</button>
+    <div id="login-msg" style="font-size:13px; color:#ef4444; text-align:center; margin-top:8px"></div>
+   </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+let allData = [];
+let isOperator = false;
+let currentTab = 'beranda';
+let deleteTarget = null;
+let likedPosts = JSON.parse(localStorage.getItem('liked_posts') || '{}');
+const OPERATOR_CODE = 'Su88_Ho3D';
+
+const defaultConfig = {
+  site_title: 'Prisma3D Community',
+  site_subtitle: 'Share & Download 3D',
+  background_color: '#f5f7fa',
+  surface_color: '#ffffff',
+  text_color: '#1e293b',
+  accent_color: '#2563eb',
+  secondary_text_color: '#64748b',
+  font_family: 'Outfit',
+  font_size: 14
+};
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => {
+    const t = document.getElementById('nav-title');
+    const s = document.getElementById('nav-subtitle');
+    if (t) t.textContent = config.site_title || defaultConfig.site_title;
+    if (s) s.textContent = config.site_subtitle || defaultConfig.site_subtitle;
+  },
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      {
+        get: () => config.background_color || defaultConfig.background_color,
+        set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); }
+      },
+      {
+        get: () => config.surface_color || defaultConfig.surface_color,
+        set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }
+      },
+      {
+        get: () => config.text_color || defaultConfig.text_color,
+        set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
+      },
+      {
+        get: () => config.accent_color || defaultConfig.accent_color,
+        set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }
+      }
+    ],
+    borderables: [],
+    fontEditable: {
+      get: () => config.font_family || defaultConfig.font_family,
+      set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+    },
+    fontSizeable: {
+      get: () => config.font_size || defaultConfig.font_size,
+      set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+    }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['site_title', config.site_title || defaultConfig.site_title],
+    ['site_subtitle', config.site_subtitle || defaultConfig.site_subtitle]
+  ])
+});
+
+const dataHandler = {
+  onDataChanged(data) {
+    allData = data;
+    renderPosts();
+  }
+};
+
+(async () => {
+  const r = await window.dataSdk.init(dataHandler);
+  if (!r.isOk) console.error('Data SDK init failed');
+})();
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function getPosts() {
+  return allData.filter(d => d.type === 'post');
+}
+
+function generateThumbBg(title) {
+  const colors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+  let hash = 0;
+  for (let i = 0; i < (title || '').length; i++)
+    hash = (title || '').charCodeAt(i) + ((hash << 5) - hash);
+  const c1 = colors[Math.abs(hash) % colors.length];
+  const c2 = colors[Math.abs(hash * 7) % colors.length];
+  const num = Math.abs(hash * 3) % 9;
+  return {
+    gradient: `linear-gradient(135deg, ${c1}, ${c2})`,
+    num
+  };
+}
+
+function renderPosts() {
+  const grid = document.getElementById('posts-grid');
+  const empty = document.getElementById('empty-state');
+  const searchTerm = (document.getElementById('search-input').value || '').toLowerCase().trim();
+  
+  let posts = getPosts();
+  if (searchTerm) {
+    posts = posts.filter(p =>
+      (p.title || '').toLowerCase().includes(searchTerm) ||
+      (p.hashtags || '').toLowerCase().includes(searchTerm) ||
+      (p.creator || '').toLowerCase().includes(searchTerm) ||
+      (p.description || '').toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  posts.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  
+  if (posts.length === 0) {
+    empty.style.display = 'block';
+    grid.innerHTML = '';
+    return;
+  }
+  
+  empty.style.display = 'none';
+  grid.innerHTML = '';
+  
+  posts.forEach((post) => {
+    const id = post.__backendId;
+    const tb = generateThumbBg(post.title);
+    const liked = likedPosts[id];
+    const likeCount = (post.likes || 0);
+    const tags = (post.hashtags || '').split(/[\s,]+/).filter(t => t);
+    const firstName = (post.creator || '?').split(' ')[0];
+    const initials = firstName.substring(0, 2).toUpperCase();
+    
+    const thumbHtml = post.thumbnail
+      ? `<img src="${post.thumbnail}" loading="lazy" style="width:100%; height:180px; object-fit:cover" onerror="this.style.background='${tb.gradient}'; this.style.display='flex'; this.style.alignItems='center'; this.style.justifyContent='center'; this.style.fontSize='48px'; this.textContent='${tb.num}';">`
+      : `<div style="width:100%; height:180px; background:${tb.gradient}; display:flex; align-items:center; justify-content:center; font-size:48px; color:#fff">${tb.num}</div>`;
+    
+    const card = document.createElement('div');
+    card.className = 'post-card';
+    card.innerHTML = `
+      <div class="post-thumb">${thumbHtml}</div>
+      <div class="post-head">
+        <div class="post-author">
+          <div class="post-avatar">${initials}</div>
+          <div class="post-info">
+            <h4>${post.creator || 'Unknown'}</h4>
+            <p>${post.file_format || 'Model'}</p>
+          </div>
+        </div>
+        ${isOperator ? `<button class="post-del" onclick="event.stopPropagation(); promptDelete('${id}')">🗑️</button>` : ''}
+      </div>
+      <div class="post-body">
+        <div class="post-title">${post.title || 'Untitled'}</div>
+        <div class="post-desc">${post.description || 'No description'}</div>
+        <div class="tags">
+          ${tags.map(t => `<span class="tag">${t.startsWith('#') ? t : '#' + t}</span>`).join('')}
+        </div>
+        <div class="post-meta">
+          <div><strong>Publisher:</strong> ${post.publisher || '-'}</div>
+          <div><strong>Format:</strong> ${post.file_format || '-'}</div>
+        </div>
+      </div>
+      <div class="post-actions">
+        <button class="action-btn ${liked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike('${id}')">
+          ${liked ? '❤️' : '🤍'} ${likeCount}
+        </button>
+        <button class="action-btn" onclick="event.stopPropagation()">💬 ${getComments(id).length}</button>
+      </div>
+    `;
+    
+    card.onclick = () => openDetail(id);
+    grid.appendChild(card);
+  });
+}
+
+function getComments(postId) {
+  return allData.filter(d => d.type === 'comment' && d.comment_post_id === postId);
+}
+
+async function toggleLike(postId) {
+  const post = allData.find(d => d.__backendId === postId);
+  if (!post) return;
+  
+  if (likedPosts[postId]) {
+    delete likedPosts[postId];
+    post.likes = Math.max(0, (post.likes || 0) - 1);
+  } else {
+    likedPosts[postId] = true;
+    post.likes = (post.likes || 0) + 1;
+  }
+  
+  localStorage.setItem('liked_posts', JSON.stringify(likedPosts));
+  const r = await window.dataSdk.update(post);
+  if (!r.isOk) showToast('Gagal update like');
+  else renderPosts();
+}
+
+function promptDelete(postId) {
+  deleteTarget = postId;
+  document.getElementById('delete-modal').classList.add('show');
+}
+
+document.getElementById('cancel-delete').onclick = () => {
+  document.getElementById('delete-modal').classList.remove('show');
+  deleteTarget = null;
+};
+
+document.getElementById('confirm-delete').onclick = async () => {
+  if (!deleteTarget) return;
+  const btn = document.getElementById('confirm-delete');
+  btn.disabled = true;
+  btn.textContent = '...';
+  
+  const post = allData.find(d => d.__backendId === deleteTarget);
+  if (post) {
+    const comments = allData.filter(d => d.type === 'comment' && d.comment_post_id === deleteTarget);
+    for (const c of comments) await window.dataSdk.delete(c);
+    
+    const r = await window.dataSdk.delete(post);
+    if (r.isOk) showToast('Konten dihapus');
+    else showToast('Gagal menghapus');
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'Hapus';
+  document.getElementById('delete-modal').classList.remove('show');
+  deleteTarget = null;
+};
+
+function openDetail(postId) {
+  const post = allData.find(d => d.__backendId === postId);
+  if (!post) return;
+  
+  document.getElementById('detail-title').textContent = post.title || 'Untitled';
+  const comments = getComments(postId);
+  const tags = (post.hashtags || '').split(/[\s,]+/).filter(t => t);
+  const tb = generateThumbBg(post.title);
+  
+  const thumbHtml = post.thumbnail
+    ? `<img src="${post.thumbnail}" loading="lazy" style="width:100%; height:240px; object-fit:cover; border-radius:12px; margin-bottom:16px" onerror="this.style.background='${tb.gradient}'; this.style.display='flex'; this.style.alignItems='center'; this.style.justifyContent='center'; this.style.fontSize='48px'; this.textContent='${tb.num}';">`
+    : `<div style="width:100%; height:240px; background:${tb.gradient}; border-radius:12px; margin-bottom:16px; display:flex; align-items:center; justify-content:center; font-size:48px; color:#fff">${tb.num}</div>`;
+  
+  document.getElementById('detail-body').innerHTML = `
+    ${thumbHtml}
+    <div style="margin-bottom:12px">
+      ${tags.map(t => `<span class="tag">${t.startsWith('#') ? t : '#' + t}</span>`).join('')}
+    </div>
+    <p style="color:var(--text-light); font-size:14px; line-height:1.6; margin-bottom:16px">${post.description || 'Tidak ada deskripsi.'}</p>
+    <div style="font-size:13px; margin-bottom:16px; color:var(--text-light)">
+      <div><strong style="color:var(--text)">Publisher:</strong> ${post.publisher || '-'}</div>
+      <div><strong style="color:var(--text)">Pembuat:</strong> ${post.creator || '-'}</div>
+      <div><strong style="color:var(--text)">Format:</strong> ${post.file_format || '-'}</div>
+      <div><strong style="color:var(--text)">Sumber:</strong> ${post.link_type || '-'}</div>
+    </div>
+    <a href="${post.download_link || '#'}" target="_blank" rel="noopener" class="btn btn-primary" style="display:block; text-align:center; text-decoration:none; margin-bottom:20px">Download (${post.link_type || 'Link'})</a>
+    <hr style="border-color:var(--border); margin-bottom:16px">
+    <h4 style="font-weight:700; font-size:16px; margin-bottom:12px">Komentar (${comments.length})</h4>
+    <div style="max-height:200px; overflow-y:auto; margin-bottom:14px">
+      ${comments.length === 0 ? '<p style="color:var(--text-light); font-size:13px">Belum ada komentar.</p>' : comments.map(c => `
+        <div style="padding:10px; background:var(--border); border-radius:8px; margin-bottom:8px">
+          <div style="font-weight:700; font-size:12px; color:var(--text)">${c.comment_author || 'Anonim'}</div>
+          <div style="font-size:12px; color:var(--text-light); margin-top:4px">${c.comment_text || ''}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="display:flex; gap:8px">
+      <input class="input-field" id="comment-name" placeholder="Nama" style="flex:1; min-width:80px">
+      <input class="input-field" id="comment-text" placeholder="Tulis komentar... (max 90)" maxlength="90" style="flex:2; min-width:120px">
+      <button class="btn btn-primary" id="submit-comment" data-post-id="${postId}" style="width:auto; padding:10px 16px">Kirim</button>
+    </div>
+    <div id="comment-msg" style="font-size:12px; margin-top:8px; color:#ef4444"></div>
+  `;
+  
+  document.getElementById('submit-comment').onclick = () => submitComment(postId);
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+async function submitComment(postId) {
+  const name = document.getElementById('comment-name').value.trim();
+  const text = document.getElementById('comment-text').value.trim();
+  const msg = document.getElementById('comment-msg');
+  
+  if (!text) {
+    msg.textContent = 'Komentar tidak boleh kosong';
+    return;
+  }
+  if (text.length > 90) {
+    msg.textContent = 'Maksimal 90 karakter';
+    return;
+  }
+  if (allData.length >= 999) {
+    msg.textContent = 'Batas data tercapai';
+    return;
+  }
+  
+  msg.textContent = '';
+  const btn = document.getElementById('submit-comment');
+  btn.disabled = true;
+  btn.textContent = '...';
+  
+  const r = await window.dataSdk.create({
+    type: 'comment',
+    comment_author: name || 'Anonim',
+    comment_text: text,
+    comment_post_id: postId,
+    title: '',
+    description: '',
+    publisher: '',
+    creator: '',
+    hashtags: '',
+    download_link: '',
+    file_format: '',
+    link_type: '',
+    thumbnail: '',
+    likes: 0,
+    created_at: new Date().toISOString()
+  });
+  
+  btn.disabled = false;
+  btn.textContent = 'Kirim';
+  
+  if (r.isOk) {
+    showToast('Komentar ditambahkan');
+    openDetail(postId);
+  } else {
+    msg.textContent = 'Gagal mengirim komentar';
+  }
+}
+
+// Event listeners untuk navigasi
+document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.nav-btn[data-tab]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + btn.dataset.tab).classList.add('active');
+    currentTab = btn.dataset.tab;
+  };
+});
+
+document.getElementById('search-input').addEventListener('input', renderPosts);
+
+// Theme toggle
+let isDark = localStorage.getItem('dark_mode') === 'true';
+
+function applyTheme() {
+  if (isDark) {
+    document.body.classList.add('dark');
+    document.getElementById('theme-toggle').textContent = '☀️';
+  } else {
+    document.body.classList.remove('dark');
+    document.getElementById('theme-toggle').textContent = '🌙';
+  }
+}
+
+document.getElementById('theme-toggle').onclick = () => {
+  isDark = !isDark;
+  localStorage.setItem('dark_mode', isDark);
+  applyTheme();
+};
+
+// Upload modal
+document.getElementById('fab-upload').onclick = () => {
+  if (!isOperator) {
+    showToast('Login sebagai Operator untuk upload');
+    return;
+  }
+  document.getElementById('upload-modal').classList.add('show');
+};
+
+document.getElementById('close-upload').onclick = () => {
+  document.getElementById('upload-modal').classList.remove('show');
+};
+
+document.getElementById('submit-upload').onclick = async () => {
+  const title = document.getElementById('up-title').value.trim();
+  const desc = document.getElementById('up-desc').value.trim();
+  const publisher = document.getElementById('up-publisher').value.trim();
+  const creator = document.getElementById('up-creator').value.trim();
+  const tags = document.getElementById('up-tags').value.trim();
+  const link = document.getElementById('up-link').value.trim();
+  const linkType = document.getElementById('up-linktype').value;
+  const format = document.getElementById('up-format').value.trim();
+  const msg = document.getElementById('upload-msg');
+  
+  if (!title || !desc || !publisher || !creator || !tags || !link || !format) {
+    msg.textContent = 'Mohon isi semua field yang wajib (*)';
+    return;
+  }
+  
+  if (allData.length >= 999) {
+    msg.textContent = 'Batas penyimpanan tercapai (999)';
+    return;
+  }
+  
+  msg.textContent = '';
+  const btn = document.getElementById('submit-upload');
+  btn.disabled = true;
+  btn.textContent = '...';
+  
+  const r = await window.dataSdk.create({
+    type: 'post',
+    title,
+    description: desc,
+    publisher,
+    creator,
+    hashtags: tags,
+    download_link: link,
+    file_format: format,
+    link_type: linkType,
+    thumbnail: document.getElementById('up-thumb').value.trim(),
+    likes: 0,
+    created_at: new Date().toISOString(),
+    comment_author: '',
+    comment_text: '',
+    comment_post_id: ''
+  });
+  
+  btn.disabled = false;
+  btn.textContent = 'Publish';
+  
+  if (r.isOk) {
+    showToast('Konten berhasil dipublish! 🎉');
+    document.getElementById('upload-modal').classList.remove('show');
+    ['up-title', 'up-desc', 'up-publisher', 'up-creator', 'up-tags', 'up-link', 'up-format', 'up-thumb'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+  } else {
+    msg.textContent = 'Gagal mempublish konten';
+  }
+};
+
+// Feedback
+document.getElementById('submit-feedback').onclick = async () => {
+  const name = document.getElementById('feedback-name').value.trim();
+  const text = document.getElementById('feedback-text').value.trim();
+  const msg = document.getElementById('feedback-msg');
+  
+  if (!text) {
+    msg.style.color = '#ef4444';
+    msg.textContent = 'Mohon isi tanggapanmu';
+    return;
+  }
+  
+  if (allData.length >= 999) {
+    msg.style.color = '#ef4444';
+    msg.textContent = 'Batas data tercapai';
+    return;
+  }
+  
+  const btn = document.getElementById('submit-feedback');
+  btn.disabled = true;
+  btn.textContent = '...';
+  
+  const r = await window.dataSdk.create({
+    type: 'feedback',
+    title: 'Feedback',
+    description: text,
+    publisher: name || 'Anonim',
+    creator: '',
+    hashtags: '',
+    download_link: '',
+    file_format: '',
+    link_type: '',
+    thumbnail: '',
+    likes: 0,
+    created_at: new Date().toISOString(),
+    comment_author: '',
+    comment_text: '',
+    comment_post_id: ''
+  });
+  
+  btn.disabled = false;
+  btn.textContent = 'Kirim Tanggapan';
+  
+  if (r.isOk) {
+    msg.style.color = 'var(--accent)';
+    msg.textContent = 'Terima kasih atas tanggapanmu! 💙';
+    document.getElementById('feedback-name').value = '';
+    document.getElementById('feedback-text').value = '';
+  } else {
+    msg.style.color = '#ef4444';
+    msg.textContent = 'Gagal mengirim';
+  }
+};
+
+// Login
+document.getElementById('login-btn').onclick = () => {
+  document.getElementById('login-modal').classList.add('show');
+};
+
+document.getElementById('close-login').onclick = () => {
+  document.getElementById('login-modal').classList.remove('show');
+};
+
+document.getElementById('submit-login').onclick = () => {
+  const code = document.getElementById('login-code').value.trim();
+  const msg = document.getElementById('login-msg');
+  
+  if (code === OPERATOR_CODE) {
+    isOperator = true;
+    document.getElementById('login-modal').classList.remove('show');
+    document.getElementById('login-btn').textContent = '✓ Operator';
+    document.getElementById('login-code').value = '';
+    showToast('Login berhasil! 🎉');
+    renderPosts();
+  } else {
+    msg.textContent = 'Kode tidak valid';
+  }
+};
+
+// Close modals on overlay click
+['upload-modal', 'detail-modal', 'delete-modal', 'login-modal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', (e) => {
+    if (e.target === document.getElementById(id)) {
+      document.getElementById(id).classList.remove('show');
+    }
+  });
+});
+
+document.getElementById('close-detail').onclick = () => {
+  document.getElementById('detail-modal').classList.remove('show');
+};
+
+// Initialize
+applyTheme();
+renderPosts();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e4f2e3b30af548b',t:'MTc3NDk1ODI4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
