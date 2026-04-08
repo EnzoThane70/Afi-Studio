@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Afi Studio - Download Rig &amp; 3D Models</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=DM+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+    :root {
+      --accent: #00d4aa;
+      --bg: #ffffff;
+      --surface: #f3f4f6;
+      --text: #1a1a2e;
+      --text-sub: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    .dark {
+      --bg: #0f0f17;
+      --surface: #1a1a2e;
+      --text: #f0f0f5;
+      --text-sub: #9ca3af;
+      --border: #2a2a3e;
+    }
+
+    body { background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
+
+    /* Navbar */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Model Cards */
+    .model-card {
+      cursor: pointer;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .model-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 24px rgba(0, 212, 170, 0.15);
+    }
+
+    .card-image {
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      width: 100%;
+      transition: transform 0.3s;
+    }
+
+    .model-card:hover .card-image { transform: scale(1.05); }
+
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .model-card:hover .card-overlay { opacity: 1; }
+
+    .card-content {
+      padding: 12px;
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .card-caption {
+      font-size: 12px;
+      color: var(--text-sub);
+      line-height: 1.4;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 480px;
+      width: 90%;
+      padding: 0;
+      overflow: hidden;
+      transform: scale(0.92);
+      transition: transform 0.25s;
+      position: relative;
+    }
+
+    .modal-overlay.active .modal-box { transform: scale(1); }
+
+    .modal-image {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+    }
+
+    .modal-content {
+      padding: 20px;
+    }
+
+    .modal-title {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .modal-caption {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .modal-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 16px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      background: transparent;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    .modal-btn:hover {
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+
+    .modal-btn:last-child { border-bottom: none; }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .modal-close:hover { background: rgba(0, 0, 0, 0.7); }
+
+    /* Thank You Screen */
+    .thank-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .thank-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .thank-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .thank-title {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .thank-subtitle {
+      color: var(--text-sub);
+      font-size: 14px;
+    }
+
+    .thank-info {
+      color: var(--text-sub);
+      font-size: 12px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--accent);
+      color: #000;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      z-index: 100;
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* Settings Panel */
+    .settings-panel {
+      position: fixed;
+      top: 0;
+      right: -320px;
+      width: 300px;
+      height: 100%;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      z-index: 60;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .settings-panel.open { right: 0; }
+
+    .settings-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 55;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .settings-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .settings-title {
+      font-weight: 700;
+      font-size: 18px;
+      font-family: 'Outfit', sans-serif;
+      margin-bottom: 24px;
+    }
+
+    .settings-section {
+      margin-bottom: 24px;
+    }
+
+    .settings-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .theme-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .theme-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+
+    .theme-btn:hover { border-color: var(--accent); }
+
+    .accent-dots {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .accent-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+
+    .accent-dot:hover { transform: scale(1.15); }
+
+    .accent-dot.active { border-color: var(--text); }
+
+    /* Development Banner */
+    .dev-banner {
+      background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+      border: 1px dashed var(--accent);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin-top: 32px;
+    }
+
+    .dev-banner-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .dev-banner-title {
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+    }
+
+    .dev-icon {
+      width: 22px;
+      height: 22px;
+      color: var(--accent);
+      animation: pulse-glow 2s infinite;
+    }
+
+    .dev-banner-text {
+      font-size: 14px;
+      color: var(--text-sub);
+    }
+
+    /* WhatsApp Button */
+    .wa-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      background: #25D366;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 15px;
+      font-family: 'Outfit', sans-serif;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .wa-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3);
+    }
+
+    /* Grid */
+    .models-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      margin-bottom: 32px;
+    }
+
+    /* Main */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    /* Animations */
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full overflow-auto w-full"><!-- Navigation -->
+   <nav class="nav-bar">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+     <div class="flex items-center gap-3">
+      <div id="logo-icon" style="width: 36px; height: 36px; border-radius: 10px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+       <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon> <polyline points="2 17 12 22 22 17"></polyline> <polyline points="2 12 12 17 22 12"></polyline>
+       </svg>
+      </div>
+      <div>
+       <h1 id="nav-title" class="text-lg font-bold leading-tight">Afi Studio</h1>
+       <p id="nav-tagline" class="text-xs" style="color: var(--text-sub);">Download Rig &amp; 3D Models</p>
+      </div>
+     </div><button id="settings-btn" aria-label="Settings" style="background: var(--surface); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text); transition: background 0.2s;"> <i data-lucide="settings" style="width: 20px; height: 20px;"></i> </button>
+    </div>
+   </nav><!-- Main Content -->
+   <main><!-- Models Grid -->
+    <section class="models-grid" id="content-grid"></section><!-- Development Banner -->
+    <div class="dev-banner">
+     <div class="dev-banner-header"><i data-lucide="hard-hat" class="dev-icon"></i> <span class="dev-banner-title">Dalam Tahap Pengembangan</span>
+     </div>
+     <p class="dev-banner-text">Masih dalam tahap pengembangan, mohon menunggu model selanjutnya 🚀</p>
+    </div><!-- WhatsApp Button -->
+    <div style="text-align: center; margin-top: 32px; margin-bottom: 20px;"><a href="https://whatsapp.com" target="_blank" rel="noopener noreferrer" class="wa-button">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"></path> <path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.616l4.584-1.453A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.317 0-4.47-.75-6.216-2.02l-.39-.305-2.823.895.934-2.764-.332-.416A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"></path>
+      </svg> Ikuti Saluran WhatsApp </a>
+    </div>
+   </main>
+  </div><!-- Modal -->
+  <div id="modal-overlay" class="modal-overlay" onclick="closeModal(event)">
+   <div class="modal-box" onclick="event.stopPropagation()"><img id="modal-thumb" src="" alt="" class="modal-image" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#2a2a3e)'; this.alt='Image unavailable';"> <button class="modal-close" onclick="closeModal()"> <i data-lucide="x" style="width: 16px; height: 16px;"></i> </button>
+    <div class="modal-content">
+     <h2 id="modal-title" class="modal-title"></h2>
+     <p id="modal-caption" class="modal-caption"></p>
+     <div class="modal-actions"><button class="modal-btn" onclick="handleDownload()"> <i data-lucide="download" style="width: 18px; height: 18px; color: var(--accent);"></i> Download </button> <button class="modal-btn" onclick="handleCopyLink()"> <i data-lucide="copy" style="width: 18px; height: 18px; color: var(--accent);"></i> Salin Link </button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Thank You Screen -->
+  <div id="thank-overlay" class="thank-overlay">
+   <div class="thank-icon"><i data-lucide="heart" style="width: 30px; height: 30px; color: #000;"></i>
+   </div>
+   <h2 class="thank-title">Terima Kasih!</h2>
+   <p class="thank-subtitle">Telah menyukai model kami ❤️</p>
+   <p class="thank-info">Mengalihkan ke halaman download...</p>
+  </div><!-- Toast Notification -->
+  <div id="toast" class="toast">
+   Link berhasil disalin!
+  </div><!-- Settings Panel -->
+  <div id="settings-backdrop" class="settings-backdrop" onclick="toggleSettings()"></div>
+  <aside id="settings-panel" class="settings-panel" role="complementary" aria-label="Settings">
+   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+    <h2 class="settings-title">Pengaturan</h2><button onclick="toggleSettings()" style="background: none; border: none; cursor: pointer; color: var(--text);"> <i data-lucide="x" style="width: 20px; height: 20px;"></i> </button>
+   </div><!-- Theme Selection -->
+   <div class="settings-section"><label class="settings-label">Tema</label>
+    <div class="theme-buttons"><button id="theme-light" class="theme-btn" onclick="setTheme('light')">☀️ Terang</button> <button id="theme-dark" class="theme-btn" onclick="setTheme('dark')">🌙 Gelap</button>
+    </div>
+   </div><!-- Accent Color Selection -->
+   <div class="settings-section"><label class="settings-label">Warna Aksen</label>
+    <div class="accent-dots" id="accent-dots"></div>
+   </div>
+  </aside>
+  <script>
+    const MODELS = [
+      {
+        thumb: 'https://i.postimg.cc/2qbcjDVp/thumbnail1.png',
+        name: 'Rig Mob Minecraft',
+        caption: 'Rig Mob Minecraft not full it\'s free.',
+        link: 'https://www.mediafire.com/file/ynm849b3g243pnc/Mob_Minecraft_Full.zip/file'
+      }
+    ];
+
+    const ACCENTS = ['#00d4aa', '#6366f1', '#f43f5e', '#f59e0b', '#3b82f6', '#ec4899', '#10b981', '#8b5cf6'];
+    let currentModel = null;
+    let currentTheme = 'light';
+    let currentAccent = '#00d4aa';
+
+    // Render Models Grid
+    function renderModels() {
+      const grid = document.getElementById('content-grid');
+      grid.innerHTML = MODELS.map((model, index) => `
+        <article class="model-card" onclick="openModal(${index})">
+          <div style="position: relative; overflow: hidden;">
+            <img src="${model.thumb}" alt="${model.name}" class="card-image" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#1a1a2e,#2a2a3e)'; this.alt='Image unavailable';">
+            <div class="card-overlay"></div>
+          </div>
+          <div class="card-content">
+            <div class="card-title">${model.name}</div>
+            <div class="card-caption">${model.caption}</div>
+          </div>
+        </article>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    // Settings Functions
+    function toggleSettings() {
+      document.getElementById('settings-panel').classList.toggle('open');
+      document.getElementById('settings-backdrop').classList.toggle('open');
+    }
+
+    function setTheme(theme) {
+      currentTheme = theme;
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+      updateThemeButtons();
+      if (window.elementSdk) {
+        window.elementSdk.setConfig({ theme });
+      }
+    }
+
+    function updateThemeButtons() {
+      const lightBtn = document.getElementById('theme-light');
+      const darkBtn = document.getElementById('theme-dark');
+      lightBtn.style.borderColor = currentTheme === 'light' ? currentAccent : 'var(--border)';
+      darkBtn.style.borderColor = currentTheme === 'dark' ? currentAccent : 'var(--border)';
+    }
+
+    function setAccent(color) {
+      currentAccent = color;
+      document.documentElement.style.setProperty('--accent', color);
+      document.querySelectorAll('.accent-dot').forEach(dot => {
+        dot.classList.toggle('active', dot.dataset.color === color);
+      });
+      updateThemeButtons();
+      if (window.elementSdk) {
+        window.elementSdk.setConfig({ accent_color: color });
+      }
+    }
+
+    // Build Accent Dots
+    (function() {
+      const container = document.getElementById('accent-dots');
+      ACCENTS.forEach(color => {
+        const dot = document.createElement('div');
+        dot.className = 'accent-dot' + (color === currentAccent ? ' active' : '');
+        dot.dataset.color = color;
+        dot.style.background = color;
+        dot.onclick = () => setAccent(color);
+        container.appendChild(dot);
+      });
+    })();
+
+    // Modal Functions
+    function openModal(index) {
+      currentModel = MODELS[index];
+      document.getElementById('modal-thumb').src = currentModel.thumb;
+      document.getElementById('modal-thumb').alt = currentModel.name;
+      document.getElementById('modal-title').textContent = currentModel.name;
+      document.getElementById('modal-caption').textContent = currentModel.caption;
+      document.getElementById('modal-overlay').classList.add('active');
+      lucide.createIcons();
+    }
+
+    function closeModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById('modal-overlay').classList.remove('active');
+    }
+
+    function handleDownload() {
+      if (!currentModel) return;
+      closeModal();
+      
+      const thankOverlay = document.getElementById('thank-overlay');
+      thankOverlay.classList.add('active');
+      
+      setTimeout(() => {
+        window.open(currentModel.link, '_blank');
+        setTimeout(() => {
+          thankOverlay.classList.remove('active');
+        }, 800);
+      }, 2000);
+    }
+
+    function handleCopyLink() {
+      if (!currentModel) return;
+      
+      navigator.clipboard.writeText(currentModel.link).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2200);
+      }).catch(() => {
+        console.error('Failed to copy link');
+      });
+    }
+
+    // Event Listeners
+    document.getElementById('settings-btn').addEventListener('click', toggleSettings);
+
+    // Element SDK
+    const defaultConfig = {
+      site_title: 'Afi Studio',
+      site_tagline: 'Download Rig & 3D Models',
+      accent_color: '#00d4aa',
+      theme: 'light',
+      font_family: 'Outfit',
+      font_size: 16
+    };
+
+    function applyConfig(config) {
+      const merged = { ...defaultConfig, ...config };
+      document.getElementById('nav-title').textContent = merged.site_title;
+      document.getElementById('nav-tagline').textContent = merged.site_tagline;
+      
+      setAccent(merged.accent_color);
+      if (merged.theme === 'dark') {
+        setTheme('dark');
+      } else {
+        setTheme('light');
+      }
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => applyConfig(config),
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.accent_color || defaultConfig.accent_color,
+              set: (value) => {
+                config.accent_color = value;
+                window.elementSdk.setConfig({ accent_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['site_title', config.site_title || defaultConfig.site_title],
+          ['site_tagline', config.site_tagline || defaultConfig.site_tagline]
+        ])
+      });
+    }
+
+    // Initialize
+    renderModels();
+    lucide.createIcons();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e8d87f0d380ef71',t:'MTc3NTYxMjA4MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
